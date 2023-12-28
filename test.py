@@ -6,6 +6,7 @@ import seaborn as sns
 import os
 import sklearn.metrics
 import warnings
+import utils
 
 from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LogisticRegression
@@ -19,26 +20,24 @@ print(os.listdir())
 
 warnings.filterwarnings('ignore')
 
-dataset_ed = pd.read_csv('ED.csv')
-dataset_b12 = pd.read_csv('B12.csv')
-dataset_d = pd.read_csv('D.csv')
-dateset_bmx = pd.read_csv('BMI.csv')
-dataset_demo = pd.read_csv('DEMO_B.csv')
-dataset_fda = pd.read_csv('FDA.csv')
-dataset_sst = pd.read_csv('SST.csv')
-dataset_diq = pd.read_csv('DIQ.csv')
-dataset_ald = pd.read_csv('ALD.csv')
-dataset_smoke = pd.read_csv('SMOKE.csv')
-dataset_sports = pd.read_csv('SPORTS.csv')
-
+dataset_ed = pd.read_csv('0102/ED_0102.csv')
+dataset_b12 = pd.read_csv('0102/B12_0102.csv')
+dataset_d = pd.read_csv('0102/D_0102.csv')
+dataset_bmx = pd.read_csv('0102/BMI_0102.csv')
+dataset_demo = pd.read_csv('0102/DEMO_B_0102.csv')
+dataset_fda = pd.read_csv('0102/FDA_0102.csv')
+dataset_sst = pd.read_csv('0102/SST_0102.csv')
+dataset_diq = pd.read_csv('0102/DIQ_0102.csv')
+dataset_ald = pd.read_csv('0102/ALD_0102.csv')
+dataset_smoke = pd.read_csv('0102/SMOKE_0102.csv')
+dataset_sports = pd.read_csv('0102/SPORTS_0102.csv')
+info_dataset_list = [ dataset_bmx, dataset_fda, dataset_diq, dataset_ald, dataset_smoke, dataset_sports,dataset_sst]
+target_dataset_list = [dataset_d, dataset_b12]
 # create interviewee info data
-info_dataset = pd.merge(dataset_demo, dateset_bmx, on='SEQN', how='left')
-info_dataset = pd.merge(info_dataset, dataset_fda, on='SEQN', how='left')
-info_dataset = pd.merge(info_dataset, dataset_sst, on='SEQN', how='left')
-info_dataset = pd.merge(info_dataset, dataset_diq, on='SEQN', how='left')
-info_dataset = pd.merge(info_dataset, dataset_ald, on='SEQN', how='left')
-info_dataset = pd.merge(info_dataset, dataset_smoke, on='SEQN', how='left')
-info_dataset = pd.merge(info_dataset, dataset_sports, on='SEQN', how='left')
+
+info_dataset = dataset_demo
+for i in info_dataset_list:
+    info_dataset = utils.merge_dfs(info_dataset, i)
 
 info_dataset = info_dataset.loc[:, ['BMXWT', 'SEQN', 'BMXBMI', 'RIAGENDR', 'RIDAGEYR',
                                     'RIDRETH1', 'DIQ010', 'SSTESTO', 'FDACODE1', 'FDACODE2',
@@ -52,7 +51,7 @@ print(drop_index, 'deleted')
 info_dataset.drop(drop_index, inplace=True)
 info_dataset = info_dataset.drop(columns=['RIAGENDR'])
 
-for idx in ['FDACODE1', 'FDACODE2','FDACODE3', 'FDACODE4', 'FDACODE5', 'FDACODE6']:
+for idx in ['FDACODE1', 'FDACODE2', 'FDACODE3', 'FDACODE4', 'FDACODE5', 'FDACODE6']:
     drop_index = info_dataset[((info_dataset[idx] > 500) & (info_dataset[idx] < 700))
                               | (info_dataset[idx] == 912)].index
     print(drop_index, 'deleted')
@@ -64,37 +63,40 @@ print(drop_index, 'deleted')
 info_dataset.drop(drop_index, inplace=True)
 info_dataset = info_dataset.drop(columns=['SSTESTO'])
 
-drop_index = info_dataset[info_dataset['DIQ010'].isin([1,7,9])].index
+drop_index = info_dataset[info_dataset['DIQ010'].isin([1, 7, 9])].index
 print(drop_index, 'deleted')
 info_dataset.drop(drop_index, inplace=True)
 info_dataset = info_dataset.drop(columns=['DIQ010'])
 
-drop_index = info_dataset[info_dataset['PAD320'].isin([7,9])].index
+drop_index = info_dataset[info_dataset['PAD320'].isin([7, 9])].index
 print(drop_index, 'deleted')
 info_dataset.drop(drop_index, inplace=True)
 info_dataset = info_dataset.drop(columns=['PAD320'])
 
-drop_index = info_dataset[info_dataset['PAD480'].isin([77,99])].index
+drop_index = info_dataset[info_dataset['PAD480'].isin([77, 99])].index
 print(drop_index, 'deleted')
 info_dataset.drop(drop_index, inplace=True)
 info_dataset = info_dataset.drop(columns=['PAD480'])
 
-drop_index = info_dataset[info_dataset['SMQ020'].isin([7,9])].index
+drop_index = info_dataset[info_dataset['SMQ020'].isin([7, 9])].index
 print(drop_index, 'deleted')
 info_dataset.drop(drop_index, inplace=True)
 info_dataset = info_dataset.drop(columns=['SMQ020'])
 
-drop_index = info_dataset[info_dataset['ALD100'].isin([7,9])].index
+drop_index = info_dataset[info_dataset['ALD100'].isin([7, 9])].index
 print(drop_index, 'deleted')
 info_dataset.drop(drop_index, inplace=True)
 info_dataset = info_dataset.drop(columns=['ALD100'])
 
 # merge datasets and remove SQEN col, reset index, drop unused cols
-merged_dataset = pd.merge(dataset_ed, dataset_b12, on='SEQN', how='left')
-merged_dataset = merged_dataset.loc[:, ['KIQ400', 'LBDFOLSI', 'LBDB12SI', 'SEQN']]
-merged_dataset = pd.merge(info_dataset, merged_dataset, on='SEQN', how='left')
-merged_dataset = pd.merge(merged_dataset, dataset_d, on='SEQN', how='left')
+merged_dataset = dataset_ed
+for i in target_dataset_list:
+    merged_dataset = utils.merge_dfs(merged_dataset, i)
 
+merged_dataset = merged_dataset.loc[:, ['KIQ400', 'LBDFOLSI', 'LBDB12SI', 'SEQN', 'LBDVIDMS']]
+
+# merge info dataset and target dataset
+merged_dataset = utils.merge_dfs(info_dataset, merged_dataset)
 merged_dataset = merged_dataset.drop(columns=['SEQN'])
 
 print(merged_dataset)
@@ -122,11 +124,6 @@ merged_dataset.drop(drop_index, inplace=True)
 merged_dataset = merged_dataset.reset_index(drop=True)
 
 print(merged_dataset)
-
-# LBDFOLSI = merged_dataset['LBDFOLSI']
-# merged_dataset['LBDFOLSI'] = LBDFOLSI.map(lambda x: 0 if x < 6.8 else 1)
-# LBDB12SI = merged_dataset['LBDB12SI']
-# merged_dataset['LBDB12SI'] = LBDB12SI.map(lambda x: 0 if x < 156 else 1)
 
 # analysing the target var
 KIQ400 = merged_dataset['KIQ400']
