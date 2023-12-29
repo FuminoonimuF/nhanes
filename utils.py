@@ -68,23 +68,24 @@ def preprocess(dir):
     ----------------------------------------
     Description  Note
     SEQN     序列号
-    DMDMARTL 婚姻状态 排除77 99
-    DMDEDUC  教育水平 排除7 9
-    RIDAGEEX 年龄
-    WTMEC2YR 权重 叠加/2
-    RIAGENDR 性别 排除2
-    RIDRETH1 种族
+    DMDMARTL 婚姻状态排除77 99    Marital Status,%    分组：Married=1/Widowed=2/Divorced=3/Separated=4/Never married=5/Living with partner=6
+    DMDEDUC  教育水平 排除7 9     Education,%         分组：Less Than High School=1/High School Diploma=2/More Than High School=3
+    RIDAGEEX 年龄                 Age,year            分组：240-480/481-720/721-   (表里按月份算)
+    WTMEC2YR 权重 叠加/2          Weight
+    RIAGENDR 性别 排除2           Gender
+    RIDRETH1 种族                 Race,%              分组：Mexican American=1/Other Hispanic=2/Non-Hispanic White=3/Non-Hispanic Black=4/Other Race=5
+  
     ----------------------------------------
-    SSTESTO  睾酮 排除小于3
-    PAD320   过去30天能否进行中等活动 排除7 9
-    PAD480   每日电脑使用时间 排除77 99
-    BMXBMI   BMI
-    SMQ020   吸烟史 排除7 9
-    ALQ101   饮酒史 排除7 9
-    BPQ040A  服用高血压药 排除7 9 1
-    BPQ090D  服用降压药 排除 7 9 1
-    DIQ010   糖尿病 排除 7 9 1
-    MCQ220   癌症 排除 7 9 1
+    SSTESTO  睾酮                                Testostosterone,%     分组：-3/3-10/10-
+    PAD320   过去30天能否进行中等活动 排除7 9    Physical Activity,%   分组：Y/N/Unable
+    PAD480   每日电脑使用时间 排除77 99          Daily hours of Computer use,%   分组：Less than 1 hour=0/1 hour=1/2-5 hours=2+3+4+5/None=6
+    BMXBMI   BMI                                 BMI,kg/m2,IQR
+    SMQ020   吸烟史 排除7 9                      Smoke,%                分组：Y/N
+    ALQ101   饮酒史 排除7 9                      Alcohol,%              分组：Y/N
+    BPQ040A  服用高血压药 排除7 9 1              Hypertention,%         分组：Y/N
+    BPQ090D  服用降脂药 排除 7 9 1               cholesterol,%          分组：Y/N
+    DIQ010   糖尿病 排除 7 9 1                   Diabetes,%             分组：Y/N
+    MCQ220   癌症 排除 7 9 1                     Cancer,%               分组：Y/N
     ----------------------------------------
     '''
 
@@ -174,13 +175,13 @@ def preprocess(dir):
     merged_dataset
     ----------------------------------------
     Description  Note
-    LBDCRYSI β隐黄素
-    LBDLUZSI 叶黄素
-    LBDB12SI 维生素12
-    LBDFOLSI 叶酸
-    LBDVIDMS 维生素D
+    LBDCRYSI β隐黄素   b-cryptoxanthin(ug/dL)
+    LBDLUZSI 叶黄素    Combined Lutein/zeaxanthin(ug/dL)
+    LBDB12SI 维生素12  Vitamin B12, serum (pmol/L)
+    LBDFOLSI 叶酸      Folate, serum (nmol/L)
+    LBDVIDMS 维生素D   Vitamin D(nmol/L)
     ----------------------------------------
-    KIQ400   ed自评 排除 7 9 
+    KIQ400   ed自评 排除 7 9    ED(Erectile Dysfunction),%, 分组：Y=1+2/N=3+4
     ----------------------------------------
     '''
     # merge datasets and remove SQEN col, reset index, drop unused cols
