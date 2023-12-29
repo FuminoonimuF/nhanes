@@ -20,115 +20,16 @@ print(os.listdir())
 
 warnings.filterwarnings('ignore')
 
-dataset_ed = pd.read_csv('0102/ED_0102.csv')
-dataset_b12 = pd.read_csv('0102/B12_0102.csv')
-dataset_d = pd.read_csv('0102/D_0102.csv')
-dataset_bmx = pd.read_csv('0102/BMI_0102.csv')
-dataset_demo = pd.read_csv('0102/DEMO_B_0102.csv')
-dataset_fda = pd.read_csv('0102/FDA_0102.csv')
-dataset_sst = pd.read_csv('0102/SST_0102.csv')
-dataset_diq = pd.read_csv('0102/DIQ_0102.csv')
-dataset_ald = pd.read_csv('0102/ALD_0102.csv')
-dataset_smoke = pd.read_csv('0102/SMOKE_0102.csv')
-dataset_sports = pd.read_csv('0102/SPORTS_0102.csv')
-info_dataset_list = [ dataset_bmx, dataset_fda, dataset_diq, dataset_ald, dataset_smoke, dataset_sports,dataset_sst]
-target_dataset_list = [dataset_d, dataset_b12]
-# create interviewee info data
+dataset_0102 = utils.preprocess('0102')
+print(dataset_0102.describe())
+dataset_0304 = utils.preprocess('0304')
+print(dataset_0304.describe())
 
-info_dataset = dataset_demo
-for i in info_dataset_list:
-    info_dataset = utils.merge_dfs(info_dataset, i)
-
-info_dataset = info_dataset.loc[:, ['BMXWT', 'SEQN', 'BMXBMI', 'RIAGENDR', 'RIDAGEYR',
-                                    'RIDRETH1', 'DIQ010', 'SSTESTO', 'FDACODE1', 'FDACODE2',
-                                    'FDACODE3', 'FDACODE4', 'FDACODE5', 'FDACODE6', 'PAD320',
-                                    'PAD480', 'BMXBMI', 'SMQ020', 'ALD100']]
-
-info_dataset.head(5)
-# preprocess info dataset
-drop_index = info_dataset[info_dataset['RIAGENDR'] == 2].index
-print(drop_index, 'deleted')
-info_dataset.drop(drop_index, inplace=True)
-info_dataset = info_dataset.drop(columns=['RIAGENDR'])
-
-for idx in ['FDACODE1', 'FDACODE2', 'FDACODE3', 'FDACODE4', 'FDACODE5', 'FDACODE6']:
-    drop_index = info_dataset[((info_dataset[idx] > 500) & (info_dataset[idx] < 700))
-                              | (info_dataset[idx] == 912)].index
-    print(drop_index, 'deleted')
-    info_dataset.drop(drop_index, inplace=True)
-    info_dataset = info_dataset.drop(columns=[idx])
-
-drop_index = info_dataset[info_dataset['SSTESTO'] < 3].index
-print(drop_index, 'deleted')
-info_dataset.drop(drop_index, inplace=True)
-info_dataset = info_dataset.drop(columns=['SSTESTO'])
-
-drop_index = info_dataset[info_dataset['DIQ010'].isin([1, 7, 9])].index
-print(drop_index, 'deleted')
-info_dataset.drop(drop_index, inplace=True)
-info_dataset = info_dataset.drop(columns=['DIQ010'])
-
-drop_index = info_dataset[info_dataset['PAD320'].isin([7, 9])].index
-print(drop_index, 'deleted')
-info_dataset.drop(drop_index, inplace=True)
-info_dataset = info_dataset.drop(columns=['PAD320'])
-
-drop_index = info_dataset[info_dataset['PAD480'].isin([77, 99])].index
-print(drop_index, 'deleted')
-info_dataset.drop(drop_index, inplace=True)
-info_dataset = info_dataset.drop(columns=['PAD480'])
-
-drop_index = info_dataset[info_dataset['SMQ020'].isin([7, 9])].index
-print(drop_index, 'deleted')
-info_dataset.drop(drop_index, inplace=True)
-info_dataset = info_dataset.drop(columns=['SMQ020'])
-
-drop_index = info_dataset[info_dataset['ALD100'].isin([7, 9])].index
-print(drop_index, 'deleted')
-info_dataset.drop(drop_index, inplace=True)
-info_dataset = info_dataset.drop(columns=['ALD100'])
-
-# merge datasets and remove SQEN col, reset index, drop unused cols
-merged_dataset = dataset_ed
-for i in target_dataset_list:
-    merged_dataset = utils.merge_dfs(merged_dataset, i)
-
-merged_dataset = merged_dataset.loc[:, ['KIQ400', 'LBDFOLSI', 'LBDB12SI', 'SEQN', 'LBDVIDMS']]
-
-# merge info dataset and target dataset
-merged_dataset = utils.merge_dfs(info_dataset, merged_dataset)
-merged_dataset = merged_dataset.drop(columns=['SEQN'])
-
-print(merged_dataset)
-
-# delete rows including na
-merged_dataset = merged_dataset.dropna()
-print(merged_dataset)
-# based docs, drop ALQ values:77 99 777 999 ,'ALQ121' 'ALQ130','ALQ142',
-#                                                 'ALQ270','ALQ280','ALQ290',
-#                                                 'ALQ151','ALQ170'
-
-# delete incorrect data
-drop_index = merged_dataset[merged_dataset['KIQ400'].isin([7, 9])].index
-print(drop_index, 'deleted.')
-merged_dataset.drop(drop_index, inplace=True)
-
-drop_index = merged_dataset[merged_dataset['LBDB12SI'] > 5000].index
-print(drop_index, 'deleted')
-merged_dataset.drop(drop_index, inplace=True)
-
-drop_index = merged_dataset[merged_dataset['LBDFOLSI'] > 500].index
-print(drop_index, 'deleted')
-merged_dataset.drop(drop_index, inplace=True)
-
+merged_dataset = pd.concat([dataset_0102,dataset_0304],axis=0)
 merged_dataset = merged_dataset.reset_index(drop=True)
-
-print(merged_dataset)
 
 # analysing the target var
 KIQ400 = merged_dataset['KIQ400']
-# merged_dataset['KIQ400'] = KIQ400
-
 print(merged_dataset.describe())
 
 # check correlation between columns
@@ -137,6 +38,34 @@ print(merged_dataset.corr()['KIQ400'].abs().sort_values(ascending=False))
 value_counts = KIQ400.value_counts().sort_index()
 
 sns.barplot(x=value_counts.index, y=value_counts.values, orient='h')
+
+plt.xticks([0, 1, 2, 3, 4])
+plt.xlabel('KIQ400 level')
+plt.ylabel('Count')
+plt.title('KIQ400 level Count')
+
+plt.show()
+
+rcParams['figure.figsize'] = 20, 14
+plt.matshow(merged_dataset.corr())
+plt.yticks(np.arange(merged_dataset.shape[1]), merged_dataset.columns)
+plt.xticks(np.arange(merged_dataset.shape[1]), merged_dataset.columns)
+plt.colorbar()
+
+plt.show()
+
+# # analysing the target var
+# KIQ400 = merged_dataset['KIQ400']
+# # merged_dataset['KIQ400'] = KIQ400
+#
+# print(merged_dataset.describe())
+#
+# # check correlation between columns
+# print(merged_dataset.corr()['KIQ400'].abs().sort_values(ascending=False))
+#
+# value_counts = KIQ400.value_counts().sort_index()
+#
+# sns.barplot(x=value_counts.index, y=value_counts.values, orient='h')
 
 # plt.xticks([0, 1, 2, 3, 4])
 # plt.xlabel('KIQ400 level')
