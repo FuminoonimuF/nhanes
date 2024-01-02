@@ -221,3 +221,19 @@ def preprocess(dir):
 
     print(merged_dataset.head(5))
     return merged_dataset
+
+
+# RIDAGEEX 年龄                 Age,year            分组：240-480/481-720/721-   (表里按月份算)
+def spilt_by_age(dataset):
+    low_age = dataset.drop(dataset[(dataset['RIDAGEEX'] <= 240) | (dataset['RIDAGEEX'] > 480)].index)
+    low_age = low_age.reset_index(drop=True)
+    mid_age = dataset.drop(dataset[(dataset['RIDAGEEX'] <= 480) | (dataset['RIDAGEEX'] > 720)].index)
+    mid_age = mid_age.reset_index(drop=True)
+    high_age = dataset.drop(dataset[(dataset['RIDAGEEX'] <= 720)].index)
+    high_age = high_age.reset_index(drop=True)
+    print(low_age, mid_age, high_age)
+    return {
+        "low_age_dataset": low_age,
+        "mid_age_dataset": mid_age,
+        "high_age_dataset": high_age
+    }

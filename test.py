@@ -27,32 +27,37 @@ print(dataset_0304.describe())
 
 merged_dataset = pd.concat([dataset_0102,dataset_0304],axis=0)
 merged_dataset = merged_dataset.reset_index(drop=True)
+age_split = utils.spilt_by_age(merged_dataset)
+low_age_dataset = age_split["low_age_dataset"]
+mid_age_dataset = age_split["mid_age_dataset"]
+high_age_dataset = age_split["high_age_dataset"]
 
-# analysing the target var
-KIQ400 = merged_dataset['KIQ400']
-print(merged_dataset.describe())
 
-# check correlation between columns
-print(merged_dataset.corr()['KIQ400'].abs().sort_values(ascending=False))
-
-value_counts = KIQ400.value_counts().sort_index()
-
-sns.barplot(x=value_counts.index, y=value_counts.values, orient='h')
-
-plt.xticks([0, 1, 2, 3, 4])
-plt.xlabel('KIQ400 level')
-plt.ylabel('Count')
-plt.title('KIQ400 level Count')
-
-plt.show()
-
-rcParams['figure.figsize'] = 20, 14
-plt.matshow(merged_dataset.corr())
-plt.yticks(np.arange(merged_dataset.shape[1]), merged_dataset.columns)
-plt.xticks(np.arange(merged_dataset.shape[1]), merged_dataset.columns)
-plt.colorbar()
-
-plt.show()
+# # analysing the target var
+# KIQ400 = merged_dataset['KIQ400']
+# print(merged_dataset.describe())
+#
+# # check correlation between columns
+# print(merged_dataset.corr()['KIQ400'].abs().sort_values(ascending=False))
+#
+# value_counts = KIQ400.value_counts().sort_index()
+#
+# sns.barplot(x=value_counts.index, y=value_counts.values, orient='h')
+#
+# plt.xticks([0, 1, 2, 3, 4])
+# plt.xlabel('KIQ400 level')
+# plt.ylabel('Count')
+# plt.title('KIQ400 level Count')
+#
+# plt.show()
+#
+# rcParams['figure.figsize'] = 20, 14
+# plt.matshow(merged_dataset.corr())
+# plt.yticks(np.arange(merged_dataset.shape[1]), merged_dataset.columns)
+# plt.xticks(np.arange(merged_dataset.shape[1]), merged_dataset.columns)
+# plt.colorbar()
+#
+# plt.show()
 
 # # analysing the target var
 # KIQ400 = merged_dataset['KIQ400']
