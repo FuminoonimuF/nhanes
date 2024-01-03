@@ -1,6 +1,7 @@
 # utils for ED analysis
 
 import pandas as pd
+import numpy as np
 import os
 import sys
 
@@ -93,19 +94,22 @@ def preprocess(dir):
                                         'SSTESTO', 'PAD320', 'PAD480', 'BMXBMI', 'SMQ020', 'ALQ101', 'DIQ010',
                                         'BPQ040A', 'BPQ090D', 'MCQ220']]
 
+    # simple imputer
+    info_dataset = info_dataset.fillna(info_dataset.mean())
+
     print(info_dataset.head(5))
 
     # preprocess info dataset
     # 婚姻状态 排除77 99
-    drop_index = info_dataset[info_dataset['DMDMARTL'].isin([77, 99])].index
-    print(drop_index, 'deleted')
-    info_dataset.drop(drop_index, inplace=True)
+    # drop_index = info_dataset[info_dataset['DMDMARTL'].isin([77, 99])].index
+    # print(drop_index, 'deleted')
+    # info_dataset.drop(drop_index, inplace=True)
     info_dataset = info_dataset.drop(columns=['DMDMARTL'])
 
     # 教育水平 排除 7 9
-    drop_index = info_dataset[info_dataset['DMDEDUC'].isin([7, 9])].index
-    print(drop_index, 'deleted')
-    info_dataset.drop(drop_index, inplace=True)
+    # drop_index = info_dataset[info_dataset['DMDEDUC'].isin([7, 9])].index
+    # print(drop_index, 'deleted')
+    # info_dataset.drop(drop_index, inplace=True)
     info_dataset = info_dataset.drop(columns=['DMDEDUC'])
 
     # WTMEC2YR权重/2
@@ -133,25 +137,25 @@ def preprocess(dir):
     drop_index = info_dataset[info_dataset['PAD320'].isin([7, 9])].index
     print(drop_index, 'deleted')
     info_dataset.drop(drop_index, inplace=True)
-    # info_dataset = info_dataset.drop(columns=['PAD320'])
+    info_dataset = info_dataset.drop(columns=['PAD320'])
 
     # 每日电脑使用时间 排除77 99
     drop_index = info_dataset[info_dataset['PAD480'].isin([77, 99])].index
     print(drop_index, 'deleted')
     info_dataset.drop(drop_index, inplace=True)
-    # info_dataset = info_dataset.drop(columns=['PAD480'])
+    info_dataset = info_dataset.drop(columns=['PAD480'])
 
     # 吸烟史 排除7 9
     drop_index = info_dataset[info_dataset['SMQ020'].isin([7, 9])].index
     print(drop_index, 'deleted')
     info_dataset.drop(drop_index, inplace=True)
-    # info_dataset = info_dataset.drop(columns=['SMQ020'])
+    info_dataset = info_dataset.drop(columns=['SMQ020'])
 
     # 饮酒史 排除7 9
     drop_index = info_dataset[info_dataset['ALQ101'].isin([7, 9])].index
     print(drop_index, 'deleted')
     info_dataset.drop(drop_index, inplace=True)
-    # info_dataset = info_dataset.drop(columns=['ALQ101'])
+    info_dataset = info_dataset.drop(columns=['ALQ101'])
 
     # 癌症 排除7 9 1
     drop_index = info_dataset[info_dataset['MCQ220'].isin([1, 7, 9])].index
@@ -194,6 +198,9 @@ def preprocess(dir):
 
     print(merged_dataset.head(5))
 
+    # simple impute
+    merged_dataset = merged_dataset.fillna(merged_dataset.median())
+
     # merge info dataset and target dataset
     merged_dataset = merge_dfs(info_dataset, merged_dataset)
     merged_dataset = merged_dataset.drop(columns=['SEQN'])
@@ -217,7 +224,23 @@ def preprocess(dir):
     print(drop_index, 'deleted')
     merged_dataset.drop(drop_index, inplace=True)
 
+    merged_dataset = merged_dataset.loc[:,
+                     ['KIQ400', 'LBDFOLSI', 'LBDB12SI', 'LBDVIDMS', 'LBDCRYSI', 'LBDLUZSI', 'RIDAGEEX', 'WTMEC2YR']]
+
     merged_dataset = merged_dataset.reset_index(drop=True)
+
+    # log
+    # merged_dataset['LBDB12SI'] = np.log(merged_dataset['LBDB12SI'])
+    # merged_dataset['LBDFOLSI'] = np.log(merged_dataset['LBDFOLSI'])
+    # merged_dataset['LBDVIDMS'] = np.log(merged_dataset['LBDVIDMS'])
+    # merged_dataset['LBDCRYSI'] = np.log(merged_dataset['LBDCRYSI'])
+    # merged_dataset['LBDLUZSI'] = np.log(merged_dataset['LBDLUZSI'])
+
+    binary_df_mean(merged_dataset,'LBDB12SI')
+    binary_df_mean(merged_dataset, 'LBDFOLSI')
+    binary_df_mean(merged_dataset, 'LBDVIDMS')
+    binary_df_mean(merged_dataset, 'LBDCRYSI')
+    binary_df_mean(merged_dataset, 'LBDLUZSI')
 
     print(merged_dataset.head(5))
     return merged_dataset
@@ -237,3 +260,10 @@ def spilt_by_age(dataset):
         "mid_age_dataset": mid_age,
         "high_age_dataset": high_age
     }
+
+
+def binary_df_mean(merged_dataset, key):
+    one_list = merged_dataset[merged_dataset[key] > merged_dataset[key].mean()].index.tolist()
+    merged_dataset.loc[one_list, key] = 1
+    zero_list = merged_dataset[merged_dataset[key] <= merged_dataset[key].mean()].index.tolist()
+    merged_dataset.loc[zero_list, key] = 0
